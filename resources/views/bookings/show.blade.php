@@ -123,7 +123,7 @@
     </div>
 
     {{-- Approve / Reject panel (supervisors & admins) --}}
-    @if ((auth()->user()->isAdmin() || auth()->user()->isRole('supervisor')) && $booking->status === \App\Models\Booking::STATUS_PENDING)
+    @if (auth()->user()->canApproveBookings() && $booking->status === \App\Models\Booking::STATUS_PENDING)
         <div class="card">
             <div class="card-header">
                 <h2 class="text-sm font-semibold text-slate-900">Take Action</h2>

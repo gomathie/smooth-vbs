@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,34 @@ Route::post('logout', [LoginController::class, 'logout'])->middleware('auth')->n
 
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('vehicles', VehicleController::class)->except(['show']);
-    Route::resource('bookings', BookingController::class)->except(['edit']);
+
+    // Viewing the vehicle list is open to all authenticated users (needed when booking).
+    // Creating, editing, and deleting vehicles requires fleet_manager or above.
+    Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::middleware('role:fleet_manager,organization_admin,super_admin')->group(function () {
+        Route::get('vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
+        Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+        Route::get('vehicles/{vehicle}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');
+        Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+        Route::patch('vehicles/{vehicle}', [VehicleController::class, 'update']);
+        Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+    });
+
+    // All authenticated users can list, create, view, and cancel their own bookings.
+    // Approving / rejecting (PUT with status payload) requires supervisor or above.
+    Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::get('bookings/create', [BookingController::class, 'create'])->name('bookings.create');
+    Route::post('bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+    Route::delete('bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
+    Route::middleware('role:supervisor,fleet_manager,organization_admin,super_admin')
+        ->group(function () {
+            Route::put('bookings/{booking}', [BookingController::class, 'update'])->name('bookings.update');
+            Route::patch('bookings/{booking}', [BookingController::class, 'update']);
+        });
+
+    // User management — organization_admin and super_admin only.
+    Route::middleware('role:organization_admin,super_admin')->group(function () {
+        Route::resource('users', UserController::class)->except(['show']);
+    });
 });

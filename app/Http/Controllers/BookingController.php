@@ -97,6 +97,7 @@ class BookingController extends Controller
         $organizationId = Auth::user()->organization_id;
         $booking = Booking::where('organization_id', $organizationId)->findOrFail($id);
         $action = $request->input('action');
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if ($action === 'cancel') {
@@ -118,7 +119,7 @@ class BookingController extends Controller
             return redirect()->route('bookings.index')->with('success', 'Booking cancelled.');
         }
 
-        if (! $user->isAdmin() && ! $user->isRole('supervisor')) {
+        if (! $user->canApproveBookings()) {
             abort(403);
         }
 

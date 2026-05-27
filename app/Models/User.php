@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'organization_id'])]
+#[Fillable(['name', 'email', 'password', 'role', 'organization_id', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -33,6 +33,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -54,6 +55,16 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return in_array($this->role, [self::ROLE_ORGANIZATION_ADMIN, self::ROLE_SUPER_ADMIN], true);
+    }
+
+    public function canManageVehicles(): bool
+    {
+        return in_array($this->role, [self::ROLE_FLEET_MANAGER, self::ROLE_ORGANIZATION_ADMIN, self::ROLE_SUPER_ADMIN], true);
+    }
+
+    public function canApproveBookings(): bool
+    {
+        return in_array($this->role, [self::ROLE_SUPERVISOR, self::ROLE_FLEET_MANAGER, self::ROLE_ORGANIZATION_ADMIN, self::ROLE_SUPER_ADMIN], true);
     }
 
     public static function roles(): array
