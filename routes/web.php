@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GpsIntegrationController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -52,5 +54,24 @@ Route::middleware('auth')->group(function () {
     // User management — organization_admin and super_admin only.
     Route::middleware('role:organization_admin,super_admin')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
+    });
+
+    // Reports — supervisor and above.
+    Route::middleware('role:supervisor,fleet_manager,organization_admin,super_admin')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/bookings', [ReportController::class, 'bookings'])->name('reports.bookings');
+        Route::get('reports/utilization', [ReportController::class, 'utilization'])->name('reports.utilization');
+    });
+
+    // GPS integrations — fleet_manager and above can manage; all auth users can view the map.
+    Route::get('gps/map', [GpsIntegrationController::class, 'map'])->name('gps.map');
+    Route::middleware('role:fleet_manager,organization_admin,super_admin')->group(function () {
+        Route::get('gps', [GpsIntegrationController::class, 'index'])->name('gps.index');
+        Route::get('gps/create', [GpsIntegrationController::class, 'create'])->name('gps.create');
+        Route::post('gps', [GpsIntegrationController::class, 'store'])->name('gps.store');
+        Route::get('gps/{gps}/edit', [GpsIntegrationController::class, 'edit'])->name('gps.edit');
+        Route::put('gps/{gps}', [GpsIntegrationController::class, 'update'])->name('gps.update');
+        Route::patch('gps/{gps}', [GpsIntegrationController::class, 'update']);
+        Route::delete('gps/{gps}', [GpsIntegrationController::class, 'destroy'])->name('gps.destroy');
     });
 });
