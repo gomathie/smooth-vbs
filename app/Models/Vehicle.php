@@ -21,6 +21,24 @@ class Vehicle extends Model
         return $this->last_latitude !== null && $this->last_longitude !== null;
     }
 
+    public static function normalizeType(string $raw): string
+    {
+        $t = strtolower(trim($raw));
+
+        return match (true) {
+            in_array($t, ['car', 'sedan', 'saloon', 'hatchback', 'coupe', 'automobile', 'compact'])          => 'Car',
+            in_array($t, ['truck', 'lorry', 'tipper', 'heavy truck', 'heavy vehicle', 'dump truck', 'tanker'])=> 'Truck',
+            in_array($t, ['bike', 'motorcycle', 'motorbike', 'moto', 'scooter', 'bicycle', 'quad'])           => 'Bike',
+            in_array($t, ['pickup', 'pickup truck', 'pick-up', 'pick up', 'bakkie'])                          => 'Pickup',
+            in_array($t, ['van', 'minivan', 'cargo van', 'panel van', 'delivery van'])                        => 'Van',
+            in_array($t, ['bus', 'coach', 'minibus', 'school bus', 'shuttle', 'microbus'])                    => 'Bus',
+            in_array($t, ['suv', '4x4', 'jeep', 'offroad', 'off-road', 'crossover', '4wd', 'land cruiser'])  => 'SUV',
+            in_array($t, ['trailer', 'semi', 'semi-trailer', 'articulated', 'flatbed', 'curtainsider'])       => 'Trailer',
+            in_array($t, ['payloader', 'loader', 'bulldozer', 'excavator', 'grader', 'dozer', 'crane', 'construction', 'forklift']) => 'Payloader',
+            default => ucfirst($raw) ?: 'Vehicle',
+        };
+    }
+
     public function isGpsOffline(): bool
     {
         if (! $this->gps_vehicle_id) {

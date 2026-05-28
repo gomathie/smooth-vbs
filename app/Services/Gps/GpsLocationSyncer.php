@@ -30,16 +30,16 @@ class GpsLocationSyncer
 
             if ($vehicle) {
                 $vehicle->update([
-                    'last_latitude'    => $loc['latitude'],
-                    'last_longitude'   => $loc['longitude'],
-                    'last_location_at' => $loc['recorded_at'],
+                    'last_latitude'       => $loc['latitude'],
+                    'last_longitude'      => $loc['longitude'],
+                    'last_location_at'    => $loc['recorded_at'],
                     'registration_number' => $loc['registration_number'] ?? $vehicle->registration_number,
-                    'vehicle_type'     => $loc['vehicle_type'] ?? $vehicle->vehicle_type,
-                    'status'           => $loc['status'] ?? $vehicle->status,
-                    'driver_name'      => $loc['driver_name'] ?? $vehicle->driver_name,
-                    'imei'             => $loc['imei'] ?? $vehicle->imei,
-                    'vin'              => $loc['vin'] ?? $vehicle->vin,
-                    'gps_vehicle_id'   => $gpsVehicleId,
+                    'vehicle_type'        => isset($loc['vehicle_type']) ? Vehicle::normalizeType($loc['vehicle_type']) : $vehicle->vehicle_type,
+                    'status'              => $loc['status'] ?? $vehicle->status,
+                    'driver_name'         => $loc['driver_name'] ?? $vehicle->driver_name,
+                    'imei'                => $loc['imei'] ?? $vehicle->imei,
+                    'vin'                 => $loc['vin'] ?? $vehicle->vin,
+                    'gps_vehicle_id'      => $gpsVehicleId,
                 ]);
 
                 $updated++;
@@ -65,7 +65,7 @@ class GpsLocationSyncer
         return Vehicle::create([
             'organization_id'  => $this->organizationId,
             'registration_number' => $registrationNumber,
-            'vehicle_type'     => $loc['vehicle_type'] ?? 'GPS vehicle',
+            'vehicle_type'     => isset($loc['vehicle_type']) ? Vehicle::normalizeType($loc['vehicle_type']) : 'Vehicle',
             'capacity'         => $loc['capacity'] ?? 1,
             'status'           => $loc['status'] ?? 'Available',
             'driver_name'      => $loc['driver_name'] ?? null,

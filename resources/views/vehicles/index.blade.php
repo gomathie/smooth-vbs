@@ -96,13 +96,16 @@ $statusBarColor = [
 
                 <div class="flex flex-1 flex-col p-4">
 
-                    {{-- Header: reg + status badge --}}
+                    {{-- Header: icon + reg + status badge --}}
                     <div class="mb-3 flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <p class="truncate text-base font-bold tracking-wide text-slate-900">
-                                {{ $vehicle->registration_number }}
-                            </p>
-                            <p class="text-xs text-slate-500 capitalize">{{ $vehicle->vehicle_type }}</p>
+                        <div class="flex min-w-0 items-center gap-3">
+                            <x-vehicle-icon :type="$vehicle->vehicle_type" size="md"/>
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-bold tracking-wide text-slate-900">
+                                    {{ $vehicle->registration_number }}
+                                </p>
+                                <p class="text-xs text-slate-500">{{ $vehicle->vehicle_type }}</p>
+                            </div>
                         </div>
                         <x-status-badge :status="$vehicle->status"/>
                     </div>
