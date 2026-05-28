@@ -91,13 +91,39 @@ class OrganizationController extends Controller
     public function update(Request $request, Organization $organization)
     {
         $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'timezone' => ['required', Rule::in(array_keys($this->timezones()))],
+            'name'          => ['required', 'string', 'max:255'],
+            'timezone'      => ['required', Rule::in(array_keys($this->timezones()))],
+            'brand_name'    => ['nullable', 'string', 'max:100'],
+            'logo_url'      => ['nullable', 'url', 'max:500'],
+            'primary_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'custom_domain' => ['nullable', 'string', 'max:253'],
         ]);
+
+        // Ensure custom domain is not already claimed by another org.
+        if ($request->filled('custom_domain')) {
+            $taken = Organization::where('id', '!=', $organization->id)
+                ->where('settings->custom_domain', $request->input('custom_domain'))
+                ->exists();
+
+            if ($taken) {
+                return back()->withErrors(['custom_domain' => 'This domain is already assigned to another organization.'])->withInput();
+            }
+        }
+
+        $settings = (array) ($organization->settings ?? []);
+        foreach (['brand_name', 'logo_url', 'primary_color', 'custom_domain'] as $key) {
+            $value = $request->input($key);
+            if (filled($value)) {
+                $settings[$key] = $value;
+            } else {
+                unset($settings[$key]);
+            }
+        }
 
         $organization->update([
             'name'     => $request->input('name'),
             'timezone' => $request->input('timezone'),
+            'settings' => $settings,
         ]);
 
         AuditLog::create([

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\GpsIntegration;
 use App\Models\Vehicle;
+use App\Services\Gps\GpsDriverFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,18 +32,25 @@ class GpsIntegrationController extends Controller
         $organizationId = Auth::user()->organization_id;
 
         $data = $request->validate([
-            'label'    => ['required', 'string', 'max:100'],
-            'provider' => ['required', 'in:' . implode(',', array_keys(GpsIntegration::PROVIDERS))],
-            'base_url' => ['nullable', 'url', 'max:255'],
-            'username' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:1'],
+            'label'      => ['required', 'string', 'max:100'],
+            'provider'   => ['required', 'in:' . implode(',', array_keys(GpsIntegration::PROVIDERS))],
+            'base_url'   => ['nullable', 'url', 'max:255'],
+            'pilot_node' => ['nullable', 'integer', 'between:1,15'],
+            'username'   => ['required', 'string', 'max:255'],
+            'password'   => ['required', 'string', 'min:1'],
         ]);
+
+        $config = [];
+        if ($data['provider'] === 'pilot_telematics') {
+            $config['node'] = (int) ($data['pilot_node'] ?? 1);
+        }
 
         $integration = GpsIntegration::create([
             'organization_id'    => $organizationId,
             'label'              => $data['label'],
             'provider'           => $data['provider'],
             'base_url'           => $data['base_url'] ?? null,
+            'config'             => $config ?: null,
             'username'           => $data['username'],
             'encrypted_password' => $data['password'],
             'status'             => GpsIntegration::STATUS_ACTIVE,
@@ -57,7 +65,10 @@ class GpsIntegrationController extends Controller
             'metadata'        => ['provider' => $integration->provider, 'label' => $integration->label],
         ]);
 
-        return redirect()->route('gps.index')->with('success', 'GPS integration added successfully.');
+        // Attempt an immediate sync so vehicles appear on the map right away.
+        $syncMessage = $this->syncNow($integration, $organizationId);
+
+        return redirect()->route('gps.index')->with('success', $syncMessage);
     }
 
     public function edit(string $id)
@@ -74,23 +85,29 @@ class GpsIntegrationController extends Controller
         $integration    = GpsIntegration::where('organization_id', $organizationId)->findOrFail($id);
 
         $data = $request->validate([
-            'label'    => ['required', 'string', 'max:100'],
-            'provider' => ['required', 'in:' . implode(',', array_keys(GpsIntegration::PROVIDERS))],
-            'base_url' => ['nullable', 'url', 'max:255'],
-            'username' => ['required', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'min:1'],
-            'status'   => ['required', 'in:' . implode(',', [GpsIntegration::STATUS_ACTIVE, GpsIntegration::STATUS_INACTIVE])],
+            'label'      => ['required', 'string', 'max:100'],
+            'provider'   => ['required', 'in:' . implode(',', array_keys(GpsIntegration::PROVIDERS))],
+            'base_url'   => ['nullable', 'url', 'max:255'],
+            'pilot_node' => ['nullable', 'integer', 'between:1,15'],
+            'username'   => ['required', 'string', 'max:255'],
+            'password'   => ['nullable', 'string', 'min:1'],
+            'status'     => ['required', 'in:' . implode(',', [GpsIntegration::STATUS_ACTIVE, GpsIntegration::STATUS_INACTIVE])],
         ]);
+
+        $config = (array) ($integration->config ?? []);
+        if ($data['provider'] === 'pilot_telematics') {
+            $config['node'] = (int) ($data['pilot_node'] ?? 1);
+        }
 
         $update = [
             'label'    => $data['label'],
             'provider' => $data['provider'],
             'base_url' => $data['base_url'] ?? null,
+            'config'   => $config ?: null,
             'username' => $data['username'],
             'status'   => $data['status'],
         ];
 
-        // Only update password if a new one was provided.
         if (! empty($data['password'])) {
             $update['encrypted_password'] = $data['password'];
         }
@@ -126,6 +143,33 @@ class GpsIntegrationController extends Controller
         $integration->delete();
 
         return redirect()->route('gps.index')->with('success', 'GPS integration removed.');
+    }
+
+    private function syncNow(GpsIntegration $integration, int $organizationId): string
+    {
+        try {
+            $driver    = GpsDriverFactory::make($integration);
+            $locations = $driver->fetchVehicleLocations();
+
+            $updated = 0;
+            foreach ($locations as $gpsVehicleId => $loc) {
+                $updated += Vehicle::where('organization_id', $organizationId)
+                    ->where('gps_vehicle_id', $gpsVehicleId)
+                    ->update([
+                        'last_latitude'    => $loc['latitude'],
+                        'last_longitude'   => $loc['longitude'],
+                        'last_location_at' => $loc['recorded_at'],
+                    ]);
+            }
+
+            $integration->update(['last_sync_at' => now(), 'status' => GpsIntegration::STATUS_ACTIVE]);
+
+            return "Integration added and synced — {$updated} vehicle(s) updated.";
+        } catch (\Throwable $e) {
+            $integration->update(['status' => GpsIntegration::STATUS_ERROR]);
+
+            return "Integration saved, but the initial sync failed: {$e->getMessage()} — check your credentials and server URL.";
+        }
     }
 
     public function map()

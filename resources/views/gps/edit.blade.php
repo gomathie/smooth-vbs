@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Edit GPS Integration')
-@section('page-title', 'Edit GPS Integration')
+@section('title', 'Edit Platform Integration')
+@section('page-title', 'Edit Platform Integration')
 
 @section('header-actions')
     <a href="{{ route('gps.index') }}" class="btn-secondary">
@@ -41,11 +41,21 @@
                     </div>
                 </div>
 
+                <div id="pilot-node-field" class="{{ old('provider', $integration->provider) !== 'pilot_telematics' ? 'hidden' : '' }}">
+                    <label for="pilot_node" class="form-label">Node</label>
+                    <select id="pilot_node" name="pilot_node" class="form-select">
+                        @for ($n = 1; $n <= 15; $n++)
+                            <option value="{{ $n }}" @selected(old('pilot_node', $integration->config['node'] ?? 1) == $n)>Node {{ $n }}</option>
+                        @endfor
+                    </select>
+                    <p class="mt-1.5 text-xs text-slate-400">The node number used in the Pilot Telematics API call.</p>
+                </div>
+
                 <div id="base-url-field">
                     <label for="base_url" class="form-label">Server URL</label>
                     <input id="base_url" type="url" name="base_url"
                         value="{{ old('base_url', $integration->base_url) }}"
-                        class="form-input" placeholder="https://your-traccar-server.com">
+                        class="form-input" placeholder="https://yourserver.com">
                 </div>
 
                 <div>
@@ -98,6 +108,7 @@
 <script>
 function toggleBaseUrl(provider) {
     document.getElementById('base-url-field').style.display = provider === 'demo' ? 'none' : '';
+    document.getElementById('pilot-node-field').classList.toggle('hidden', provider !== 'pilot_telematics');
 }
 toggleBaseUrl(document.getElementById('provider').value);
 </script>

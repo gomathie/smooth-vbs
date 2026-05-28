@@ -64,6 +64,66 @@
         </div>
     </div>
 
+    {{-- White Label settings --}}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-sm font-semibold text-slate-900">White Label</h2>
+            <p class="text-xs text-slate-400">Customize how this organization's users see the app.</p>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('organizations.update', $organization) }}" class="space-y-5">
+                @csrf
+                @method('PUT')
+                {{-- Pass the main fields through hidden inputs so the same update() handles both --}}
+                <input type="hidden" name="name" value="{{ $organization->name }}">
+                <input type="hidden" name="timezone" value="{{ $organization->timezone }}">
+
+                <div>
+                    <label for="brand_name" class="form-label">Brand Name</label>
+                    <input id="brand_name" type="text" name="brand_name"
+                        value="{{ old('brand_name', $organization->settings['brand_name'] ?? '') }}"
+                        class="form-input" placeholder="Acme Fleet Manager">
+                    <p class="mt-1.5 text-xs text-slate-400">Replaces "{{ config('app.name') }}" in the sidebar and page titles.</p>
+                </div>
+
+                <div>
+                    <label for="logo_url" class="form-label">Logo URL</label>
+                    <input id="logo_url" type="url" name="logo_url"
+                        value="{{ old('logo_url', $organization->settings['logo_url'] ?? '') }}"
+                        class="form-input" placeholder="https://cdn.acme.com/logo.png">
+                    <p class="mt-1.5 text-xs text-slate-400">PNG or SVG, ideally square. Shown at 32×32px in the sidebar.</p>
+                </div>
+
+                <div>
+                    <label for="primary_color" class="form-label">Primary Color</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" name="primary_color_picker" id="primary_color_picker"
+                            value="{{ old('primary_color', $organization->settings['primary_color'] ?? '#2563eb') }}"
+                            class="h-10 w-12 cursor-pointer rounded-lg border border-slate-300 p-0.5"
+                            oninput="document.getElementById('primary_color').value = this.value">
+                        <input id="primary_color" type="text" name="primary_color"
+                            value="{{ old('primary_color', $organization->settings['primary_color'] ?? '') }}"
+                            class="form-input font-mono" placeholder="#2563eb" maxlength="7"
+                            oninput="document.getElementById('primary_color_picker').value = this.value">
+                    </div>
+                    <p class="mt-1.5 text-xs text-slate-400">Hex color for buttons, active nav, and accents.</p>
+                </div>
+
+                <div>
+                    <label for="custom_domain" class="form-label">Custom Domain</label>
+                    <input id="custom_domain" type="text" name="custom_domain"
+                        value="{{ old('custom_domain', $organization->settings['custom_domain'] ?? '') }}"
+                        class="form-input font-mono" placeholder="fleet.acme.com">
+                    <p class="mt-1.5 text-xs text-slate-400">When users visit this domain, they see this organization's branding on the login page.</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+                    <button type="submit" class="btn-primary">Save White Label</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @if ($organization->users_count === 0 && $organization->vehicles_count === 0)
         <div class="card border-red-200">
             <div class="card-body flex items-center justify-between">

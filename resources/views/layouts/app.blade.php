@@ -3,8 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Dashboard') — Smooth VBS</title>
+    <title>@yield('title', 'Dashboard') — {{ $branding['brand_name'] }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if ($branding['primary_color'])
+    <style>
+        :root { --brand: {{ $branding['primary_color'] }}; }
+        .btn-primary { background-color: var(--brand) !important; }
+        .btn-primary:hover { background-color: color-mix(in srgb, var(--brand) 85%, black) !important; }
+        .bg-blue-600 { background-color: var(--brand) !important; }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--brand) !important;
+            --tw-ring-color: color-mix(in srgb, var(--brand) 20%, transparent) !important;
+        }
+    </style>
+    @endif
     @stack('head')
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans">
@@ -16,14 +28,18 @@
 >
     {{-- Logo --}}
     <div class="flex h-16 shrink-0 items-center gap-3 border-b border-slate-800 px-5">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5 text-white">
-                <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V13.5h12V6.375c0-1.036-.84-1.875-1.875-1.875h-8.25ZM13.5 15h-12v2.625c0 1.035.84 1.875 1.875 1.875h.375a3 3 0 1 1 6 0h3a.75.75 0 0 0 .75-.75V15Z"/>
-                <path d="M8.25 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM15.75 6.75a.75.75 0 0 0-.75.75v11.25c0 .087.015.17.042.248a3 3 0 0 1 5.958.464c.853-.175 1.522-.935 1.464-1.883a18.659 18.659 0 0 0-3.732-10.104 1.837 1.837 0 0 0-1.47-.725H15.75Z"/>
-                <path d="M19.5 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
-            </svg>
-        </div>
-        <span class="text-base font-semibold text-white">Smooth VBS</span>
+        @if ($branding['logo_url'])
+            <img src="{{ $branding['logo_url'] }}" alt="{{ $branding['brand_name'] }}" class="h-8 w-auto max-w-[2rem] rounded object-contain">
+        @else
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5 text-white">
+                    <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V13.5h12V6.375c0-1.036-.84-1.875-1.875-1.875h-8.25ZM13.5 15h-12v2.625c0 1.035.84 1.875 1.875 1.875h.375a3 3 0 1 1 6 0h3a.75.75 0 0 0 .75-.75V15Z"/>
+                    <path d="M8.25 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM15.75 6.75a.75.75 0 0 0-.75.75v11.25c0 .087.015.17.042.248a3 3 0 0 1 5.958.464c.853-.175 1.522-.935 1.464-1.883a18.659 18.659 0 0 0-3.732-10.104 1.837 1.837 0 0 0-1.47-.725H15.75Z"/>
+                    <path d="M19.5 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
+                </svg>
+            </div>
+        @endif
+        <span class="text-base font-semibold text-white">{{ $branding['brand_name'] }}</span>
         {{-- Mobile close button --}}
         <button id="sidebar-close" class="ml-auto rounded-md p-1 text-slate-400 hover:text-white lg:hidden">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5">
@@ -77,7 +93,7 @@
             class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
                 {{ Route::is('gps.map') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 shrink-0">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"/>
             </svg>
             Live Map
         </a>
@@ -90,7 +106,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
                 </svg>
-                GPS Integrations
+                Platform Integrations
             </a>
         @endif
 

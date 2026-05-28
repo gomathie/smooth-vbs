@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
-#[Fillable(['organization_id', 'provider', 'label', 'base_url', 'username', 'encrypted_password', 'status', 'last_sync_at'])]
+#[Fillable(['organization_id', 'provider', 'label', 'base_url', 'config', 'username', 'encrypted_password', 'status', 'last_sync_at'])]
 class GpsIntegration extends Model
 {
     public const STATUS_ACTIVE = 'Active';
@@ -22,6 +22,7 @@ class GpsIntegration extends Model
 
     protected $casts = [
         'last_sync_at' => 'datetime',
+        'config'       => 'array',
     ];
 
     protected function encryptedPassword(): Attribute

@@ -18,10 +18,11 @@ class PilotTelematicsDriver implements GpsDriverInterface
             $this->integration->username,
             $this->integration->encrypted_password,
         )
+        ->withoutVerifying()
         ->timeout(15)
         ->get("{$baseUrl}/api/api.php", [
             'cmd'  => 'list',
-            'node' => 1,
+            'node' => (int) ($this->integration->config['node'] ?? 1),
         ]);
 
         if (! $response->successful()) {

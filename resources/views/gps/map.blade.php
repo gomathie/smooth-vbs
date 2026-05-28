@@ -101,16 +101,19 @@
 @endsection
 
 @if ($vehicles->isNotEmpty())
+@php
+    $vehicleData = $vehicles->map(fn($v) => [
+        'registration_number' => $v->registration_number,
+        'vehicle_type'        => $v->vehicle_type,
+        'status'              => $v->status,
+        'lat'                 => $v->last_latitude,
+        'lng'                 => $v->last_longitude,
+        'updated_at'          => $v->last_location_at?->diffForHumans(),
+    ])->values();
+@endphp
 @push('scripts')
 <script>
-const vehicles = @json($vehicles->map(fn($v) => [
-    'registration_number' => $v->registration_number,
-    'vehicle_type'        => $v->vehicle_type,
-    'status'              => $v->status,
-    'lat'                 => $v->last_latitude,
-    'lng'                 => $v->last_longitude,
-    'updated_at'          => $v->last_location_at?->diffForHumans(),
-]));
+const vehicles = @json($vehicleData);
 
 const map = L.map('map');
 

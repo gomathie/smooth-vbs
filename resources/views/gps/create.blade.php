@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Add GPS Integration')
-@section('page-title', 'Add GPS Integration')
+@section('title', 'Add Platform Integration')
+@section('page-title', 'Add Platform Integration')
 
 @section('header-actions')
     <a href="{{ route('gps.index') }}" class="btn-secondary">
@@ -38,6 +38,16 @@
                             @endforeach
                         </select>
                     </div>
+                </div>
+
+                <div id="pilot-node-field" class="hidden">
+                    <label for="pilot_node" class="form-label">Node</label>
+                    <select id="pilot_node" name="pilot_node" class="form-select">
+                        @for ($n = 1; $n <= 15; $n++)
+                            <option value="{{ $n }}" @selected(old('pilot_node', 1) == $n)>Node {{ $n }}</option>
+                        @endfor
+                    </select>
+                    <p class="mt-1.5 text-xs text-slate-400">The node number used in the Pilot Telematics API call.</p>
                 </div>
 
                 <div id="base-url-field">
@@ -79,6 +89,7 @@
 function toggleBaseUrl(provider) {
     document.getElementById('base-url-field').style.display = provider === 'demo' ? 'none' : '';
     document.getElementById('pilot-hint').classList.toggle('hidden', provider !== 'pilot_telematics');
+    document.getElementById('pilot-node-field').classList.toggle('hidden', provider !== 'pilot_telematics');
 }
 toggleBaseUrl(document.getElementById('provider').value);
 </script>

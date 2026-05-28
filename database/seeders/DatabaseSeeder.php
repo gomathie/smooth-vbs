@@ -25,8 +25,8 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'name' => 'Platform Admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password123'),
+            'email' => 'admin@svbs.com',
+            'password' => Hash::make('+233.Svbs2026'),
             'role' => User::ROLE_SUPER_ADMIN,
             'organization_id' => $organization->id,
         ]);

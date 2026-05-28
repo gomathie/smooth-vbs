@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'GPS Integrations')
-@section('page-title', 'GPS Integrations')
+@section('title', 'Telematics Integrations')
+@section('page-title', 'Telematics Platforms')
 
 @section('header-actions')
     <a href="{{ route('gps.map') }}" class="btn-secondary">
@@ -36,7 +36,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
             </svg>
-            <p class="text-sm text-slate-400">No GPS integrations configured.</p>
+            <p class="text-sm text-slate-400">No platform integrations configured.</p>
             <a href="{{ route('gps.create') }}" class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700">Add your first integration →</a>
         </div>
     @else
@@ -84,7 +84,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-end gap-2">
                                     <a href="{{ route('gps.edit', $integration) }}" class="btn-secondary py-1.5 px-3 text-xs">Edit</a>
-                                    <form method="POST" action="{{ route('gps.destroy', $integration) }}" data-confirm="Remove this GPS integration?">
+                                    <form method="POST" action="{{ route('gps.destroy', $integration) }}" data-confirm="Remove this platform integration?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn-danger py-1.5 px-3 text-xs">Remove</button>
