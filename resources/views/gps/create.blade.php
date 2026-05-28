@@ -44,7 +44,12 @@
                     <label for="base_url" class="form-label">Server URL</label>
                     <input id="base_url" type="url" name="base_url" value="{{ old('base_url') }}"
                         class="form-input" placeholder="https://your-traccar-server.com">
-                    <p class="mt-1.5 text-xs text-slate-400">Required for Traccar. Not needed for Demo mode.</p>
+                    <p class="mt-1.5 text-xs text-slate-400">
+                        Required for Pilot Telematics and Traccar. Not needed for Demo mode.
+                        <span id="pilot-hint" class="hidden">
+                            Enter the base server address — the driver appends <code>/api/api.php</code> automatically.
+                        </span>
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -72,8 +77,8 @@
 
 <script>
 function toggleBaseUrl(provider) {
-    const field = document.getElementById('base-url-field');
-    field.style.display = provider === 'demo' ? 'none' : '';
+    document.getElementById('base-url-field').style.display = provider === 'demo' ? 'none' : '';
+    document.getElementById('pilot-hint').classList.toggle('hidden', provider !== 'pilot_telematics');
 }
 toggleBaseUrl(document.getElementById('provider').value);
 </script>

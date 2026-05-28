@@ -97,8 +97,7 @@
 
 <script>
 function toggleBaseUrl(provider) {
-    const field = document.getElementById('base-url-field');
-    field.style.display = provider === 'demo' ? 'none' : '';
+    document.getElementById('base-url-field').style.display = provider === 'demo' ? 'none' : '';
 }
 toggleBaseUrl(document.getElementById('provider').value);
 </script>

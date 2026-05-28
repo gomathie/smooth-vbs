@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\gomat\\\\OneDrive\\\\Bureau\\\\Smooth VBS 1\\\\resources\\\\views\\\\welcome.blade.php\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\gomat\\\\OneDrive\\\\Bureau\\\\Smooth VBS 1\\\\tests\\\\Feature\\\\ExampleTest.php\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\gomat\\\\OneDrive\\\\Bureau\\\\Smooth VBS 1\\\\tests\\\\Unit\\\\ExampleTest.php\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\gomat\\\\OneDrive\\\\Bureau\\\\Smooth VBS 1\\\\app\\\\Models\\\\VehicleSensor.php\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\gomat\\\\OneDrive\\\\Bureau\\\\Smooth VBS 1\\\\app\\\\Models\\\\VehicleSensorReading.php\")",
+      "Bash(php -r \"require 'vendor/autoload.php'; echo 'OK';\")"
     ]
   }
 }

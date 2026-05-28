@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GpsIntegrationController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
@@ -50,6 +51,11 @@ Route::middleware('auth')->group(function () {
             Route::put('bookings/{booking}', [BookingController::class, 'update'])->name('bookings.update');
             Route::patch('bookings/{booking}', [BookingController::class, 'update']);
         });
+
+    // Organization management — super_admin only.
+    Route::middleware('role:super_admin')->group(function () {
+        Route::resource('organizations', OrganizationController::class)->except(['show']);
+    });
 
     // User management — organization_admin and super_admin only.
     Route::middleware('role:organization_admin,super_admin')->group(function () {

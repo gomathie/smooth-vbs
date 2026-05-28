@@ -15,8 +15,9 @@ class GpsIntegration extends Model
     public const STATUS_ERROR = 'Error';
 
     public const PROVIDERS = [
-        'traccar' => 'Traccar',
-        'demo'    => 'Demo (test mode)',
+        'pilot_telematics' => 'Pilot Telematics',
+        'traccar'          => 'Traccar',
+        'demo'             => 'Demo (test mode)',
     ];
 
     protected $casts = [
