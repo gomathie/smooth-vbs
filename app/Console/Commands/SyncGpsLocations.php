@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\GpsIntegration;
-use App\Models\Vehicle;
 use App\Services\Gps\GpsDriverFactory;
+use App\Services\Gps\GpsLocationSyncer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -39,7 +39,7 @@ class SyncGpsLocations extends Command
                 $driver    = GpsDriverFactory::make($integration);
                 $locations = $driver->fetchVehicleLocations();
 
-                $updated = $this->applyLocations($integration->organization_id, $locations);
+                $updated = (new GpsLocationSyncer($integration->organization_id))->applyLocations($locations);
                 $totalUpdated += $updated;
 
                 $integration->update([
@@ -67,20 +67,6 @@ class SyncGpsLocations extends Command
 
     private function applyLocations(int $organizationId, array $locations): int
     {
-        $updated = 0;
-
-        foreach ($locations as $gpsVehicleId => $loc) {
-            $rows = Vehicle::where('organization_id', $organizationId)
-                ->where('gps_vehicle_id', $gpsVehicleId)
-                ->update([
-                    'last_latitude'    => $loc['latitude'],
-                    'last_longitude'   => $loc['longitude'],
-                    'last_location_at' => $loc['recorded_at'],
-                ]);
-
-            $updated += $rows;
-        }
-
-        return $updated;
+        return (new GpsLocationSyncer($organizationId))->applyLocations($locations);
     }
 }

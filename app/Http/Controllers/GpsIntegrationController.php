@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\GpsIntegration;
 use App\Models\Vehicle;
 use App\Services\Gps\GpsDriverFactory;
+use App\Services\Gps\GpsLocationSyncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -151,16 +152,7 @@ class GpsIntegrationController extends Controller
             $driver    = GpsDriverFactory::make($integration);
             $locations = $driver->fetchVehicleLocations();
 
-            $updated = 0;
-            foreach ($locations as $gpsVehicleId => $loc) {
-                $updated += Vehicle::where('organization_id', $organizationId)
-                    ->where('gps_vehicle_id', $gpsVehicleId)
-                    ->update([
-                        'last_latitude'    => $loc['latitude'],
-                        'last_longitude'   => $loc['longitude'],
-                        'last_location_at' => $loc['recorded_at'],
-                    ]);
-            }
+            $updated = (new GpsLocationSyncer($organizationId))->applyLocations($locations);
 
             $integration->update(['last_sync_at' => now(), 'status' => GpsIntegration::STATUS_ACTIVE]);
 
