@@ -20,7 +20,7 @@
               
 
         {{-- Organization details --}}
-        
+
 <div class="card">
     <div class="card-header">
         <h2 class="text-sm font-semibold text-slate-900">Organization Details</h2>
@@ -101,7 +101,7 @@
         {{-- Initial admin (optional) --}}
         <div class="card">
             <div class="card-header">
-                <h2 class="text-sm font-semibold text-slate-900">Initial Administrator <span class="ml-1 text-xs font-normal text-slate-400">(optional)</span></h2>
+                <h2 class="text-sm font-semibold text-slate-900">Initial Administrator <span class="ml-1 text-xs font-normal text-slate-400">(Required)</span></h2>
                 <p class="text-xs text-slate-400">Create an Organization Admin account for this organization. You can also add users later.</p>
             </div>
             <div class="card-body space-y-5">
