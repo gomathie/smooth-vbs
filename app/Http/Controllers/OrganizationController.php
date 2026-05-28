@@ -24,25 +24,80 @@ class OrganizationController extends Controller
 
     public function create()
     {
-        return view('organizations.create', ['timezones' => $this->timezones()]);
+        return view('organizations.create', [
+            'timezones' => $this->timezones(),
+            'countries' => $this->countries(),
+        ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'           => ['required', 'string', 'max:255'],
-            'timezone'       => ['required', Rule::in(array_keys($this->timezones()))],
-            'admin_name'     => ['nullable', 'string', 'max:255', 'required_with:admin_email'],
-            'admin_email'    => ['nullable', 'email', 'max:255', 'unique:users,email', 'required_with:admin_name'],
-            'admin_password' => ['nullable', 'string', 'min:8', 'required_with:admin_email'],
-        ]);
+    'name' => [
+        'required',
+        'string',
+        'max:55',
+        'regex:/^[\pL\pN\s\-\.\'&,()]+$/u'
+    ],
+
+    'type' => [
+        'required',
+        Rule::in(['limited_company', 'self_employed', 'individual', 'partnership', 'non_profit'])
+    ],
+
+    'country' => [
+        'required',
+        Rule::in(array_keys($this->countries()))
+    ],
+
+    'tax_id' => [
+        'nullable',
+        'string',
+        'max:16',
+        'regex:/^[A-Za-z0-9\-]{3,16}$/'
+    ],
+
+    'timezone' => [
+        'required',
+        Rule::in(array_keys($this->timezones()))
+    ],
+
+    'admin_name' => [
+        'required',
+        'string',
+        'max:40',
+        'regex:/^[\pL\pN\s\-\.\'&,()]+$/u'
+    ],
+
+    'admin_email' => [
+        'required',
+        'email:rfc,dns',
+        'max:55',
+        'unique:users,email'
+    ],
+
+    'admin_password' => [
+        'required',
+        'string',
+        'min:8',
+        'max:55'
+    ],
+]);
 
         $slug = $this->uniqueSlug($request->input('name'));
+
+        $settings = [];
+        foreach (['type', 'country', 'tax_id'] as $key) {
+            if ($request->filled($key)) {
+                $settings[$key] = $request->input($key);
+            }
+        }
 
         $organization = Organization::create([
             'name'     => $request->input('name'),
             'slug'     => $slug,
             'timezone' => $request->input('timezone'),
+            'settings' => $settings ?: null,
         ]);
 
         AuditLog::create([
@@ -54,25 +109,23 @@ class OrganizationController extends Controller
             'metadata'        => ['name' => $organization->name],
         ]);
 
-        if ($request->filled('admin_email')) {
-            $admin = User::create([
-                'organization_id' => $organization->id,
-                'name'            => $request->input('admin_name'),
-                'email'           => $request->input('admin_email'),
-                'password'        => Hash::make($request->input('admin_password')),
-                'role'            => User::ROLE_ORGANIZATION_ADMIN,
-                'is_active'       => true,
-            ]);
+        $admin = User::create([
+            'organization_id' => $organization->id,
+            'name'            => $request->input('admin_name'),
+            'email'           => $request->input('admin_email'),
+            'password'        => Hash::make($request->input('admin_password')),
+            'role'            => User::ROLE_ORGANIZATION_ADMIN,
+            'is_active'       => true,
+        ]);
 
-            AuditLog::create([
-                'organization_id' => Auth::user()->organization_id,
-                'user_id'         => Auth::id(),
-                'event'           => 'user_created',
-                'auditable_type'  => User::class,
-                'auditable_id'    => $admin->id,
-                'metadata'        => ['role' => $admin->role, 'organization_id' => $organization->id],
-            ]);
-        }
+        AuditLog::create([
+            'organization_id' => Auth::user()->organization_id,
+            'user_id'         => Auth::id(),
+            'event'           => 'user_created',
+            'auditable_type'  => User::class,
+            'auditable_id'    => $admin->id,
+            'metadata'        => ['role' => $admin->role, 'organization_id' => $organization->id],
+        ]);
 
         return redirect()->route('organizations.index')
             ->with('success', "Organization \"{$organization->name}\" created successfully.");
@@ -85,6 +138,7 @@ class OrganizationController extends Controller
         return view('organizations.edit', [
             'organization' => $organization,
             'timezones'    => $this->timezones(),
+            'countries'    => $this->countries(),
         ]);
     }
 
@@ -180,6 +234,92 @@ class OrganizationController extends Controller
         }
 
         return $slug;
+    }
+
+    private function countries(): array
+    {
+        return [
+            'DZ' => 'Algeria',
+            'AO' => 'Angola',
+            'BJ' => 'Benin',
+            'BW' => 'Botswana',
+            'BF' => 'Burkina Faso',
+            'BI' => 'Burundi',
+            'CM' => 'Cameroon',
+            'CV' => 'Cape Verde',
+            'CF' => 'Central African Republic',
+            'TD' => 'Chad',
+            'KM' => 'Comoros',
+            'CG' => 'Congo',
+            'CD' => 'Congo (DRC)',
+            'CI' => "Côte d'Ivoire",
+            'DJ' => 'Djibouti',
+            'EG' => 'Egypt',
+            'GQ' => 'Equatorial Guinea',
+            'ER' => 'Eritrea',
+            'SZ' => 'Eswatini',
+            'ET' => 'Ethiopia',
+            'GA' => 'Gabon',
+            'GM' => 'Gambia',
+            'GH' => 'Ghana',
+            'GN' => 'Guinea',
+            'GW' => 'Guinea-Bissau',
+            'KE' => 'Kenya',
+            'LS' => 'Lesotho',
+            'LR' => 'Liberia',
+            'LY' => 'Libya',
+            'MG' => 'Madagascar',
+            'MW' => 'Malawi',
+            'ML' => 'Mali',
+            'MR' => 'Mauritania',
+            'MU' => 'Mauritius',
+            'MA' => 'Morocco',
+            'MZ' => 'Mozambique',
+            'NA' => 'Namibia',
+            'NE' => 'Niger',
+            'NG' => 'Nigeria',
+            'RW' => 'Rwanda',
+            'ST' => 'São Tomé and Príncipe',
+            'SN' => 'Senegal',
+            'SC' => 'Seychelles',
+            'SL' => 'Sierra Leone',
+            'SO' => 'Somalia',
+            'ZA' => 'South Africa',
+            'SS' => 'South Sudan',
+            'SD' => 'Sudan',
+            'TZ' => 'Tanzania',
+            'TG' => 'Togo',
+            'TN' => 'Tunisia',
+            'UG' => 'Uganda',
+            'ZM' => 'Zambia',
+            'ZW' => 'Zimbabwe',
+            // Rest of world
+            'AU' => 'Australia',
+            'BR' => 'Brazil',
+            'CA' => 'Canada',
+            'CN' => 'China',
+            'FR' => 'France',
+            'DE' => 'Germany',
+            'IN' => 'India',
+            'ID' => 'Indonesia',
+            'IL' => 'Israel',
+            'IT' => 'Italy',
+            'JP' => 'Japan',
+            'MY' => 'Malaysia',
+            'MX' => 'Mexico',
+            'NL' => 'Netherlands',
+            'NZ' => 'New Zealand',
+            'PK' => 'Pakistan',
+            'PT' => 'Portugal',
+            'SA' => 'Saudi Arabia',
+            'SG' => 'Singapore',
+            'ES' => 'Spain',
+            'SE' => 'Sweden',
+            'CH' => 'Switzerland',
+            'AE' => 'United Arab Emirates',
+            'GB' => 'United Kingdom',
+            'US' => 'United States',
+        ];
     }
 
     private function timezones(): array
