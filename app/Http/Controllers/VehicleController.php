@@ -13,6 +13,9 @@ class VehicleController extends Controller
     {
         $organizationId = Auth::user()->organization_id;
         $vehicles = Vehicle::where('organization_id', $organizationId)
+            ->with(['sensorReadings' => function ($query) {
+                $query->orderByDesc('recorded_at');
+            }])
             ->orderBy('registration_number')
             ->paginate(12);
 

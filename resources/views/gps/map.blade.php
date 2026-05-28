@@ -72,17 +72,41 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Vehicle</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Type</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">GPS ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">IMEI / VIN</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Sensors</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Coordinates</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Updated</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @foreach ($vehicles as $vehicle)
+                            @php
+                                $vehicleSensors = $readings[$vehicle->id] ?? collect();
+                            @endphp
                             <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer"
                                 onclick="focusVehicle({{ $vehicle->last_latitude }}, {{ $vehicle->last_longitude }}, '{{ e($vehicle->registration_number) }}')">
                                 <td class="px-6 py-3 font-semibold text-slate-900">{{ $vehicle->registration_number }}</td>
                                 <td class="px-6 py-3 text-slate-600">{{ $vehicle->vehicle_type }}</td>
                                 <td class="px-6 py-3"><x-status-badge :status="$vehicle->status"/></td>
+                                <td class="px-6 py-3 text-slate-500">{{ $vehicle->gps_vehicle_id ?? '—' }}</td>
+                                <td class="px-6 py-3 text-slate-500">
+                                    {{ $vehicle->imei ?? '—' }}
+                                    @if ($vehicle->imei && $vehicle->vin)
+                                        <br>{{ $vehicle->vin }}
+                                    @elseif ($vehicle->vin)
+                                        {{ $vehicle->vin }}
+                                    @endif
+                                </td>
+                                <td class="px-6 py-3 text-slate-500 text-xs">
+                                    @if ($vehicleSensors->isNotEmpty())
+                                        @foreach ($vehicleSensors as $sensor)
+                                            <div>{{ $sensor->sensor_name }}: {{ $sensor->human_value ?? $sensor->raw_value }}</div>
+                                        @endforeach
+                                    @else
+                                        <span class="text-slate-400">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-3 font-mono text-xs text-slate-500">
                                     {{ number_format($vehicle->last_latitude, 5) }},
                                     {{ number_format($vehicle->last_longitude, 5) }}
@@ -106,9 +130,17 @@
         'registration_number' => $v->registration_number,
         'vehicle_type'        => $v->vehicle_type,
         'status'              => $v->status,
+        'gps_vehicle_id'      => $v->gps_vehicle_id,
+        'driver_name'         => $v->driver_name,
+        'imei'                => $v->imei,
+        'vin'                 => $v->vin,
         'lat'                 => $v->last_latitude,
         'lng'                 => $v->last_longitude,
         'updated_at'          => $v->last_location_at?->diffForHumans(),
+        'sensors'             => ($readings[$v->id] ?? collect())->map(fn($sensor) => [
+            'name' => $sensor->sensor_name,
+            'value' => $sensor->human_value ?? $sensor->raw_value,
+        ])->values(),
     ])->values();
 @endphp
 @push('scripts')
@@ -124,15 +156,25 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 const markers = [];
 
 vehicles.forEach(v => {
+    const sensorHtml = v.sensors.length > 0
+        ? `<div class="text-xs text-slate-500 mt-2"><strong>Sensors:</strong><br>${v.sensors.map(s => `${s.name}: ${s.value}`).join('<br>')}</div>`
+        : '';
+
+    const detailsHtml = `
+        <div class="text-sm">
+            <p class="font-bold">${v.registration_number}</p>
+            <p class="text-gray-600">${v.vehicle_type} &mdash; ${v.status}</p>
+            ${v.gps_vehicle_id ? `<p class="text-gray-500 text-xs">GPS ID: ${v.gps_vehicle_id}</p>` : ''}
+            ${v.driver_name ? `<p class="text-gray-500 text-xs">Driver: ${v.driver_name}</p>` : ''}
+            ${v.imei ? `<p class="text-gray-500 text-xs">IMEI: ${v.imei}</p>` : ''}
+            ${v.vin ? `<p class="text-gray-500 text-xs">VIN: ${v.vin}</p>` : ''}
+            <p class="text-gray-400 text-xs mt-1">Updated ${v.updated_at ?? '—'}</p>
+            ${sensorHtml}
+        </div>`;
+
     const marker = L.marker([v.lat, v.lng])
         .addTo(map)
-        .bindPopup(`
-            <div class="text-sm">
-                <p class="font-bold">${v.registration_number}</p>
-                <p class="text-gray-600">${v.vehicle_type} &mdash; ${v.status}</p>
-                <p class="text-gray-400 text-xs mt-1">Updated ${v.updated_at ?? '—'}</p>
-            </div>
-        `);
+        .bindPopup(detailsHtml);
     markers.push({ marker, registration_number: v.registration_number });
 });
 

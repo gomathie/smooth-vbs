@@ -9,6 +9,7 @@ use App\Services\Gps\GpsDriverFactory;
 use App\Services\Gps\GpsLocationSyncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class GpsIntegrationController extends Controller
 {
@@ -172,8 +173,16 @@ class GpsIntegrationController extends Controller
             ->whereNotNull('last_latitude')
             ->whereNotNull('last_longitude')
             ->orderBy('registration_number')
-            ->get(['id', 'registration_number', 'vehicle_type', 'status', 'last_latitude', 'last_longitude', 'last_location_at']);
+            ->get(['id', 'registration_number', 'vehicle_type', 'status', 'driver_name', 'gps_vehicle_id', 'imei', 'vin', 'last_latitude', 'last_longitude', 'last_location_at']);
 
-        return view('gps.map', compact('vehicles'));
+        $readings = DB::table('vehicle_sensor_readings')
+            ->where('organization_id', $organizationId)
+            ->whereIn('vehicle_id', $vehicles->pluck('id'))
+            ->orderByDesc('recorded_at')
+            ->get()
+            ->groupBy('vehicle_id')
+            ->map(fn($list) => $list->unique('sensor_name')->values());
+
+        return view('gps.map', compact('vehicles', 'readings'));
     }
 }

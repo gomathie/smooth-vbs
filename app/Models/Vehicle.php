@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\VehicleSensorReading;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,5 +29,10 @@ class Vehicle extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function sensorReadings()
+    {
+        return $this->hasMany(VehicleSensorReading::class);
     }
 }

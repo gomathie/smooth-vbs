@@ -10,15 +10,15 @@ Multiple organizations can run on the same installation. Each organization's dat
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Laravel 13 (PHP 8.3) |
-| Database | SQLite (development) / MySQL or PostgreSQL (production) |
-| Frontend CSS | Tailwind CSS v4 |
-| Build tool | Vite 8 |
-| Maps | Leaflet.js (CDN) |
-| Web server | Apache (with mod_rewrite, mod_ssl) |
-| Scheduler | Laravel Scheduler via system cron |
+| Layer        | Technology                         |
+| ------------ | ---------------------------------- |
+| Framework    | Laravel 13 (PHP 8.3)               |
+| Database     | MySQL                              |
+| Frontend CSS | Tailwind CSS v4                    |
+| Build tool   | Vite 8                             |
+| Maps         | Leaflet.js (CDN)                   |
+| Web server   | Apache (with mod_rewrite, mod_ssl) |
+| Scheduler    | Laravel Scheduler via system cron  |
 
 ---
 
@@ -32,13 +32,13 @@ Every record in the system (users, vehicles, bookings, GPS integrations) belongs
 
 Access is enforced at both the route level (middleware) and inside controllers. The role hierarchy from least to most privileged is:
 
-| Role | Key Permissions |
-|------|----------------|
-| `employee` | View vehicles, create and cancel own bookings |
-| `supervisor` | All of the above + approve or reject bookings, view reports |
-| `fleet_manager` | All of the above + add/edit/delete vehicles, manage GPS integrations |
-| `organization_admin` | All of the above + manage users within the organization |
-| `super_admin` | Platform-wide access — manage all organizations, create new tenants |
+| Role                 | Key Permissions                                                      |
+| -------------------- | -------------------------------------------------------------------- |
+| `employee`           | View vehicles, create and cancel own bookings                        |
+| `supervisor`         | All of the above + approve or reject bookings, view reports          |
+| `fleet_manager`      | All of the above + add/edit/delete vehicles, manage GPS integrations |
+| `organization_admin` | All of the above + manage users within the organization              |
+| `super_admin`        | Platform-wide access — manage all organizations, create new tenants  |
 
 ### White Labeling
 
@@ -86,11 +86,11 @@ This returns an array keyed by the provider's vehicle ID, with `latitude`, `long
 
 **Supported providers:**
 
-| Provider | Notes |
-|----------|-------|
-| Pilot Telematics | HTTP Basic Auth, `GET /api/api.php?cmd=list&node=1` |
-| Traccar | HTTP Basic Auth, `GET /api/positions` |
-| Demo | Generates synthetic positions for testing (no real API needed) |
+| Provider         | Notes                                                          |
+| ---------------- | -------------------------------------------------------------- |
+| Pilot Telematics | HTTP Basic Auth, `GET /api/api.php?cmd=list&node=1`            |
+| Traccar          | HTTP Basic Auth, `GET /api/positions`                          |
+| Demo             | Generates synthetic positions for testing (no real API needed) |
 
 Adding a new provider requires creating one PHP class and registering it in `GpsDriverFactory`.
 
@@ -117,11 +117,11 @@ A Leaflet.js map displays all vehicles that have a known GPS position. Markers s
 
 Three built-in reports, all filterable by date range and exportable to CSV:
 
-| Report | What it shows |
-|--------|--------------|
-| Booking History | All bookings with status, vehicle, user, duration |
+| Report              | What it shows                                       |
+| ------------------- | --------------------------------------------------- |
+| Booking History     | All bookings with status, vehicle, user, duration   |
 | Vehicle Utilization | Hours booked per vehicle, idle vehicles highlighted |
-| (Index) | Links to all reports with summary stats |
+| (Index)             | Links to all reports with summary stats             |
 
 **Access:** supervisor and above.
 
@@ -130,11 +130,13 @@ Three built-in reports, all filterable by date range and exportable to CSV:
 ### 6. User Management
 
 Organization admins can:
+
 - Create users and assign roles
 - Edit user name, email, and role
 - Deactivate or reactivate users (soft disable — no data is deleted)
 
 Guards in place:
+
 - Cannot deactivate your own account
 - Cannot deactivate or demote the last active administrator in an organization
 
@@ -145,6 +147,7 @@ Guards in place:
 ### 7. Organization Management
 
 Super admins can:
+
 - Create new organizations (with optional initial admin user)
 - Edit organization name and timezone
 - Configure white-label settings per organization
@@ -178,8 +181,8 @@ bookings
 
 ## Scheduled Tasks
 
-| Task | Schedule | Command |
-|------|----------|---------|
+| Task              | Schedule        | Command    |
+| ----------------- | --------------- | ---------- |
 | GPS location sync | Every 3 minutes | `gps:sync` |
 
 The scheduler must be triggered by the system cron every minute:

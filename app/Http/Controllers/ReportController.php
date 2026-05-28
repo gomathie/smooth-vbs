@@ -33,7 +33,7 @@ class ReportController extends Controller
         $monthly = Booking::where('organization_id', $organizationId)
             ->where('start_datetime', '>=', $now->copy()->subMonths(5)->startOfMonth())
             ->select(
-                DB::raw("strftime('%Y-%m', start_datetime) as month"),
+                DB::raw("DATE_FORMAT(start_datetime, '%Y-%m') as month"),
                 DB::raw('COUNT(*) as total')
             )
             ->groupBy('month')
@@ -99,7 +99,7 @@ class ReportController extends Controller
             ->select(
                 'vehicle_id',
                 DB::raw('COUNT(*) as booking_count'),
-                DB::raw('SUM((julianday(end_datetime) - julianday(start_datetime)) * 24) as hours_booked')
+                DB::raw('SUM(TIMESTAMPDIFF(SECOND, start_datetime, end_datetime)) / 3600 as hours_booked')
             )
             ->groupBy('vehicle_id')
             ->with('vehicle:id,registration_number,vehicle_type,capacity')

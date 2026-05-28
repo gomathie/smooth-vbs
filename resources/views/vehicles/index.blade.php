@@ -32,10 +32,7 @@
                 <thead>
                     <tr class="border-b border-slate-200 bg-slate-50/60">
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Registration</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Capacity</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Fuel</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Driver</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Details</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
                         <th class="px-6 py-3"></th>
                     </tr>
@@ -44,10 +41,27 @@
                     @foreach ($vehicles as $vehicle)
                         <tr class="hover:bg-slate-50/60 transition-colors">
                             <td class="px-6 py-4 font-semibold text-slate-900">{{ $vehicle->registration_number }}</td>
-                            <td class="px-6 py-4 text-slate-600">{{ $vehicle->vehicle_type }}</td>
-                            <td class="px-6 py-4 text-slate-600">{{ $vehicle->capacity }} seats</td>
-                            <td class="px-6 py-4 text-slate-600">{{ $vehicle->fuel_type ?? '—' }}</td>
-                            <td class="px-6 py-4 text-slate-600">{{ $vehicle->driver_name ?? '—' }}</td>
+                            <td class="px-6 py-4 text-slate-600 text-xs">
+                                <div><strong>Type:</strong> {{ $vehicle->vehicle_type }}</div>
+                                <div><strong>Capacity:</strong> {{ $vehicle->capacity }} seat{{ $vehicle->capacity === 1 ? '' : 's' }}</div>
+                                <div><strong>Fuel:</strong> {{ $vehicle->fuel_type ?? '—' }}</div>
+                                <div><strong>Driver:</strong> {{ $vehicle->driver_name ?? '—' }}</div>
+                                <div><strong>GPS ID:</strong> {{ $vehicle->gps_vehicle_id ?? '—' }}</div>
+                                <div><strong>IMEI:</strong> {{ $vehicle->imei ?? '—' }}</div>
+                                <div><strong>VIN:</strong> {{ $vehicle->vin ?? '—' }}</div>
+                                @if ($vehicle->sensorReadings->isNotEmpty())
+                                    <div><strong>Sensors:</strong></div>
+                                    @foreach ($vehicle->sensorReadings->unique('sensor_name')->values() as $sensor)
+                                        <div class="ml-3 text-slate-500 text-xs">{{ $sensor->sensor_name }}: {{ $sensor->human_value ?? $sensor->raw_value }}</div>
+                                    @endforeach
+                                @else
+                                    <div><strong>Sensors:</strong> —</div>
+                                @endif
+                                @if ($vehicle->last_latitude !== null && $vehicle->last_longitude !== null)
+                                    <div><strong>Location:</strong> {{ number_format($vehicle->last_latitude, 5) }}, {{ number_format($vehicle->last_longitude, 5) }}</div>
+                                @endif
+                                <div><strong>Updated:</strong> {{ $vehicle->last_location_at?->diffForHumans() ?? '—' }}</div>
+                            </td>
                             <td class="px-6 py-4">
                                 <x-status-badge :status="$vehicle->status"/>
                             </td>

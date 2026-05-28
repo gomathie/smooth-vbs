@@ -55,13 +55,58 @@ class PilotTelematicsDriver implements GpsDriverInterface
             }
 
             $locations[$agentId] = [
-                'gps_vehicle_id' => $agentId,
-                'latitude'       => (float) $status['lat'],
-                'longitude'      => (float) $status['lon'],
-                'recorded_at'    => Carbon::createFromTimestamp((int) $status['unixtimestamp']),
+                'gps_vehicle_id'     => $agentId,
+                'registration_number' => $this->extractVehicleNumber($vehicle),
+                'imei'               => $this->extractImei($vehicle, $status),
+                'latitude'           => (float) $status['lat'],
+                'longitude'          => (float) $status['lon'],
+                'recorded_at'        => Carbon::createFromTimestamp((int) $status['unixtimestamp']),
             ];
         }
 
         return $locations;
+    }
+
+    private function extractVehicleNumber(array $vehicle): ?string
+    {
+        foreach (['vehicle_number', 'vehicle_no', 'vehiclenumber', 'vehicleNumber', 'number', 'registration_number', 'registrationNumber', 'reg_no', 'regno', 'license_plate', 'licence_plate', 'plate', 'plate_number', 'licenceNo'] as $key) {
+            if (! empty($vehicle[$key])) {
+                return trim((string) $vehicle[$key]);
+            }
+        }
+
+        foreach (['vehicle', 'device', 'details', 'attributes'] as $nested) {
+            if (isset($vehicle[$nested]) && is_array($vehicle[$nested])) {
+                $result = $this->extractVehicleNumber($vehicle[$nested]);
+                if ($result) {
+                    return $result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function extractImei(array $vehicle, array $status): ?string
+    {
+        foreach (['imei', 'IMEI', 'device_imei', 'device_IMEI', 'sim_imei', 'sim_IMEI', 'phone_imei'] as $key) {
+            if (! empty($vehicle[$key])) {
+                return trim((string) $vehicle[$key]);
+            }
+            if (! empty($status[$key])) {
+                return trim((string) $status[$key]);
+            }
+        }
+
+        foreach (['vehicle', 'device', 'details', 'attributes', 'sim'] as $nested) {
+            if (isset($vehicle[$nested]) && is_array($vehicle[$nested])) {
+                $result = $this->extractImei($vehicle[$nested], []);
+                if ($result) {
+                    return $result;
+                }
+            }
+        }
+
+        return null;
     }
 }
