@@ -91,12 +91,13 @@ class OrganizationController extends Controller
     public function update(Request $request, Organization $organization)
     {
         $request->validate([
-            'name'          => ['required', 'string', 'max:255'],
-            'timezone'      => ['required', Rule::in(array_keys($this->timezones()))],
-            'brand_name'    => ['nullable', 'string', 'max:100'],
-            'logo_url'      => ['nullable', 'url', 'max:500'],
-            'primary_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'custom_domain' => ['nullable', 'string', 'max:253'],
+            'name'             => ['required', 'string', 'max:255'],
+            'timezone'         => ['required', Rule::in(array_keys($this->timezones()))],
+            'brand_name'       => ['nullable', 'string', 'max:100'],
+            'logo_url'         => ['nullable', 'url', 'max:500'],
+            'primary_color'    => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'custom_domain'    => ['nullable', 'string', 'max:253'],
+            'vehicle_tooltips' => ['nullable', 'boolean'],
         ]);
 
         // Ensure custom domain is not already claimed by another org.
@@ -119,6 +120,7 @@ class OrganizationController extends Controller
                 unset($settings[$key]);
             }
         }
+        $settings['vehicle_tooltips'] = $request->boolean('vehicle_tooltips');
 
         $organization->update([
             'name'     => $request->input('name'),

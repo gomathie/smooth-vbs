@@ -69,9 +69,9 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/utilization', [ReportController::class, 'utilization'])->name('reports.utilization');
     });
 
-    // GPS integrations — fleet_manager and above can manage; all auth users can view the map.
+    // GPS integrations — platform integrations can be managed by fleet managers, super admins, or organization admins who have been granted integration rights.
     Route::get('gps/map', [GpsIntegrationController::class, 'map'])->name('gps.map');
-    Route::middleware('role:fleet_manager,organization_admin,super_admin')->group(function () {
+    Route::middleware('manage_integrations')->group(function () {
         Route::get('gps', [GpsIntegrationController::class, 'index'])->name('gps.index');
         Route::get('gps/create', [GpsIntegrationController::class, 'create'])->name('gps.create');
         Route::post('gps', [GpsIntegrationController::class, 'store'])->name('gps.store');

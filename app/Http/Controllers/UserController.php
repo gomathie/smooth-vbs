@@ -36,6 +36,7 @@ class UserController extends Controller
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role'     => ['required', Rule::in(User::roles())],
+            'can_manage_integrations' => ['sometimes', 'boolean'],
         ]);
 
         $user = User::create([
@@ -45,6 +46,7 @@ class UserController extends Controller
             'password'        => Hash::make($request->input('password')),
             'role'            => $request->input('role'),
             'is_active'       => true,
+            'can_manage_integrations' => Auth::user()->role === User::ROLE_SUPER_ADMIN && $request->boolean('can_manage_integrations'),
         ]);
 
         AuditLog::create([
@@ -76,6 +78,7 @@ class UserController extends Controller
             'name'  => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'role'  => ['required', Rule::in(User::roles())],
+            'can_manage_integrations' => ['sometimes', 'boolean'],
         ]);
 
         // Prevent demoting the last active admin in the organization.
@@ -99,7 +102,15 @@ class UserController extends Controller
             $changes['role'] = [$user->role, $request->input('role')];
         }
 
-        $user->update($request->only(['name', 'email', 'role']));
+        $attributes = $request->only(['name', 'email', 'role']);
+        if (Auth::user()->role === User::ROLE_SUPER_ADMIN) {
+            $attributes['can_manage_integrations'] = $request->boolean('can_manage_integrations');
+            if ($user->can_manage_integrations !== $attributes['can_manage_integrations']) {
+                $changes['can_manage_integrations'] = [$user->can_manage_integrations, $attributes['can_manage_integrations']];
+            }
+        }
+
+        $user->update($attributes);
 
         if ($changes) {
             AuditLog::create([

@@ -12,14 +12,26 @@ class VehicleController extends Controller
     public function index()
     {
         $organizationId = Auth::user()->organization_id;
+
         $vehicles = Vehicle::where('organization_id', $organizationId)
-            ->with(['sensorReadings' => function ($query) {
-                $query->orderByDesc('recorded_at');
-            }])
+            ->with(['sensorReadings' => fn($q) => $q->orderByDesc('recorded_at')])
             ->orderBy('registration_number')
             ->paginate(12);
 
-        return view('vehicles.index', compact('vehicles'));
+        $statusCounts = Vehicle::where('organization_id', $organizationId)
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $offlineCount = Vehicle::where('organization_id', $organizationId)
+            ->whereNotNull('gps_vehicle_id')
+            ->where(fn($q) => $q->whereNull('last_location_at')
+                ->orWhere('last_location_at', '<', now()->subMinutes(30)))
+            ->count();
+
+        $tooltipsEnabled = (bool) (Auth::user()->organization->settings['vehicle_tooltips'] ?? false);
+
+        return view('vehicles.index', compact('vehicles', 'statusCounts', 'offlineCount', 'tooltipsEnabled'));
     }
 
     public function create()

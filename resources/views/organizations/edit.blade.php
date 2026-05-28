@@ -117,6 +117,21 @@
                     <p class="mt-1.5 text-xs text-slate-400">When users visit this domain, they see this organization's branding on the login page.</p>
                 </div>
 
+                <div class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <input
+                        id="vehicle_tooltips"
+                        type="checkbox"
+                        name="vehicle_tooltips"
+                        value="1"
+                        @checked(old('vehicle_tooltips', $organization->settings['vehicle_tooltips'] ?? false))
+                        class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    >
+                    <div>
+                        <label for="vehicle_tooltips" class="form-label">Enable vehicle hover tooltips</label>
+                        <p class="text-xs text-slate-500">When enabled, hovering over a vehicle card shows its full details and live sensor data inline.</p>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
                     <button type="submit" class="btn-primary">Save White Label</button>
                 </div>

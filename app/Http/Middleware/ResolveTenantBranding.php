@@ -26,10 +26,11 @@ class ResolveTenantBranding
         if ($org) {
             $settings = (array) ($org->settings ?? []);
             $branding = [
-                'brand_name'    => $settings['brand_name'] ?? config('app.name', 'Smooth VBS'),
-                'logo_url'      => $settings['logo_url'] ?? null,
-                'primary_color' => $this->validHex($settings['primary_color'] ?? null),
-                'custom_domain' => $settings['custom_domain'] ?? null,
+                'brand_name'       => $settings['brand_name'] ?? config('app.name', 'Smooth VBS'),
+                'logo_url'         => $settings['logo_url'] ?? null,
+                'primary_color'    => $this->validHex($settings['primary_color'] ?? null),
+                'custom_domain'    => $settings['custom_domain'] ?? null,
+                'vehicle_tooltips' => (bool) ($settings['vehicle_tooltips'] ?? false),
             ];
         }
 
@@ -41,10 +42,11 @@ class ResolveTenantBranding
     private function defaults(): array
     {
         return [
-            'brand_name'    => config('app.name', 'Smooth VBS'),
-            'logo_url'      => null,
-            'primary_color' => null,
-            'custom_domain' => null,
+            'brand_name'       => config('app.name', 'Smooth VBS'),
+            'logo_url'         => null,
+            'primary_color'    => null,
+            'custom_domain'    => null,
+            'vehicle_tooltips' => false,
         ];
     }
 

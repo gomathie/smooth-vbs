@@ -98,7 +98,7 @@
             Live Map
         </a>
 
-        @if (auth()->user()->canManageVehicles())
+        @if (auth()->user()->canManageIntegrations())
             <a href="{{ route('gps.index') }}"
                 class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
                     {{ Route::is('gps.index') || Route::is('gps.create') || Route::is('gps.edit') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">

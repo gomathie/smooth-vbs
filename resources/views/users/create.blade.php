@@ -91,6 +91,23 @@
                     </div>
                 </div>
 
+                @if (auth()->user()->role === 'super_admin')
+                    <div class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <input
+                            id="can_manage_integrations"
+                            type="checkbox"
+                            name="can_manage_integrations"
+                            value="1"
+                            @checked(old('can_manage_integrations'))
+                            class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        >
+                        <div>
+                            <label for="can_manage_integrations" class="form-label">Allow platform integration management</label>
+                            <p class="text-xs text-slate-500">Grant this user the right to add, edit, and remove telematics integrations.</p>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
                     <a href="{{ route('users.index') }}" class="btn-secondary">Cancel</a>
                     <button type="submit" class="btn-primary">Create User</button>

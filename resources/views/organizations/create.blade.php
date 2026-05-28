@@ -17,28 +17,86 @@
     <form method="POST" action="{{ route('organizations.store') }}" class="space-y-6">
         @csrf
 
-        {{-- Organization details --}}
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-sm font-semibold text-slate-900">Organization Details</h2>
-            </div>
-            <div class="card-body space-y-5">
-                <div>
-                    <label for="name" class="form-label">Name <span class="text-red-500">*</span></label>
-                    <input id="name" type="text" name="name" value="{{ old('name') }}"
-                        required class="form-input" placeholder="Acme Transport Ltd.">
-                </div>
+              
 
-                <div>
-                    <label for="timezone" class="form-label">Timezone <span class="text-red-500">*</span></label>
-                    <select id="timezone" name="timezone" required class="form-select">
-                        @foreach ($timezones as $tz => $label)
-                            <option value="{{ $tz }}" @selected(old('timezone', 'UTC') === $tz)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
+        {{-- Organization details --}}
+        
+<div class="card">
+    <div class="card-header">
+        <h2 class="text-sm font-semibold text-slate-900">Organization Details</h2>
+    </div>
+    <div class="card-body space-y-5">
+
+        {{-- Name --}}
+        <div>
+            <label for="name" class="form-label">Name <span class="text-red-500">*</span></label>
+            <input
+                id="name"
+                type="text"
+                name="name"
+                value="{{ old('name') }}"
+                required
+                class="form-input"
+                placeholder="Acme Transport Ltd."
+            >
         </div>
+
+        {{-- Organization Type --}}
+        <div>
+            <label for="type" class="form-label">Organization Type <span class="text-red-500">*</span></label>
+            <select id="type" name="type" required class="form-select">                                
+                <option value="limited_company" @selected(old('type') === 'limited_company')>Limited Company</option>
+                <option value="self_employed" @selected(old('type') === 'self_employed')>Self Employed</option>
+                <option value="individual" @selected(old('type') === 'individual')>Individual</option>
+                <option value="partnership" @selected(old('type') === 'partnership')>Partnership</option>
+                <option value="non_profit" @selected(old('type') === 'non_profit')>Non-Profit</option>
+            </select>
+        </div>
+
+        {{-- Country --}}
+        <div>
+            <label for="country" class="form-label">Country <span class="text-red-500">*</span></label>
+            <select id="country" name="country" required class="form-select">
+                @foreach ($countries as $code => $name)
+                    <option value="{{ $code }}" @selected(old('country') === $code)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Tax ID --}}
+        <div>
+            <label for="tax_id" class="form-label">
+                Tax ID <span class="text-slate-400">(Optional)</span>
+            </label>
+            <input
+                id="tax_id"
+                type="text"
+                name="tax_id"
+                value="{{ old('tax_id') }}"
+                class="form-input"
+                placeholder="TIN / VAT Number"
+                maxlength="16"
+                pattern="[A-Za-z0-9\-]+"
+                autocomplete="off"
+                spellcheck="false"
+            >
+            <p class="mt-1 text-xs text-slate-500">
+                Maximum 16 characters. Letters, numbers, and hyphens only.
+            </p>
+        </div>
+
+        {{-- Timezone --}}
+        <div>
+            <label for="timezone" class="form-label">Timezone <span class="text-red-500">*</span></label>
+            <select id="timezone" name="timezone" required class="form-select">
+                @foreach ($timezones as $tz => $label)
+                    <option value="{{ $tz }}" @selected(old('timezone', 'UTC') === $tz)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+
+    </div>
+</div>
 
         {{-- Initial admin (optional) --}}
         <div class="card">

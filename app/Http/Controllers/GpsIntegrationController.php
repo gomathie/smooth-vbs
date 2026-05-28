@@ -10,6 +10,7 @@ use App\Services\Gps\GpsLocationSyncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GpsIntegrationController extends Controller
 {
@@ -159,9 +160,15 @@ class GpsIntegrationController extends Controller
 
             return "Integration added and synced — {$updated} vehicle(s) updated.";
         } catch (\Throwable $e) {
+            Log::error('GPS initial sync failed', [
+                'integration_id' => $integration->id,
+                'provider'       => $integration->provider,
+                'error'          => $e->getMessage(),
+            ]);
+
             $integration->update(['status' => GpsIntegration::STATUS_ERROR]);
 
-            return "Integration saved, but the initial sync failed: {$e->getMessage()} — check your credentials and server URL.";
+            return 'Integration saved, but the initial sync failed — check your credentials and server URL.';
         }
     }
 

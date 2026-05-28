@@ -21,6 +21,15 @@ class Vehicle extends Model
         return $this->last_latitude !== null && $this->last_longitude !== null;
     }
 
+    public function isGpsOffline(): bool
+    {
+        if (! $this->gps_vehicle_id) {
+            return false;
+        }
+        return ! $this->last_location_at
+            || $this->last_location_at->lt(now()->subMinutes(30));
+    }
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);
